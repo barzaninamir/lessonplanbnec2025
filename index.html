@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پلانی ڕۆژانە - کۆمەڵگەی پەروەردەیی بارزانیی نمر</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;900&display=swap');
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f1f5f9; }
+        
+        .template-box {
+            border: 2px solid #38bdf8;
+            background-color: #ffffff;
+            color: #0f172a;
+        }
+        .header-top {
+            background-color: #e0f2fe;
+            border-bottom: 2px solid #38bdf8;
+        }
+        .section-box {
+            border: 1px solid #7dd3fc;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            background-color: #f8fafc;
+        }
+        .badge-title {
+            background-color: #bae6fd;
+            color: #0369a1;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        @media print {
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .print-container { box-shadow: none !important; border: 2px solid #0284c7 !important; width: 100% !important; margin: 0 !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4">
+
+    <!-- Container -->
+    <div id="app" class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
+        
+        <!-- STEP 1: Language Selection -->
+        <div id="step-1" class="p-8 text-center space-y-6">
+            <div class="inline-block p-4 bg-sky-100 text-sky-700 rounded-full text-3xl mb-2">📋</div>
+            <h1 class="text-2xl font-bold text-slate-800">سیستەمی پلانی ڕۆژانەی مامۆستایان</h1>
+            <p class="text-slate-600 max-w-md mx-auto">کۆمەڵگەی پەروەردەیی بارزانیی نمر - تکایە زمان هەڵبژێرە / Please select language / اختر اللغة:</p>
+            <div class="flex justify-center gap-4 pt-4">
+                <button onclick="setLanguage('ku')" class="px-6 py-3 bg-sky-600 text-white font-medium rounded-xl hover:bg-sky-700 transition shadow-md">کوردی</button>
+                <button onclick="setLanguage('en')" class="px-6 py-3 bg-slate-700 text-white font-medium rounded-xl hover:bg-slate-800 transition shadow-md">English</button>
+                <button onclick="setLanguage('ar')" class="px-6 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition shadow-md">العربية</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Form Filling -->
+        <div id="step-2" class="hidden p-6 space-y-6">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h2 id="ui-form-title" class="text-xl font-bold text-sky-800">پڕکردنەوەی فۆرمی پلانی ڕۆژانە</h2>
+                <button onclick="goToStep(1)" id="ui-back-btn" class="text-sm bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-600">← گەڕانەوە</button>
+            </div>
+
+            <form id="lessonPlanForm" class="space-y-5" onsubmit="previewPlan(event)">
+                
+                <!-- School & Logo Customization -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-sky-50 p-4 rounded-xl border border-sky-100 items-center">
+                    <div>
+                        <label id="ui-logo-label" class="block text-xs font-semibold text-sky-900 mb-1">دانانی لۆگۆ (بە ئارەزووی خۆت):</label>
+                        <input type="file" id="logoInput" accept="image/*" class="text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-500 file:text-white hover:file:bg-sky-600">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label id="ui-school-label" class="block text-xs font-semibold text-sky-900 mb-1">ناوی قوتابخانە:</label>
+                        <input type="text" id="schoolName" value="کۆمەڵگەی پەروەردەیی بارزانیی نمر" class="w-full bg-white border border-sky-200 rounded-lg px-3 py-2 text-sm outline-none font-bold text-sky-900">
+                    </div>
+                </div>
+
+                <!-- Main Info Inputs -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <label id="ui-teacher-label" class="block text-xs font-medium text-slate-600 mb-1">ناوی مامۆستا:</label>
+                        <input type="text" id="teacherName" required placeholder="" class="w-full border rounded-lg px-3 py-2 text-sm outline-none font-semibold">
+                    </div>
+                    <div>
+                        <label id="ui-class-label" class="block text-xs font-medium text-slate-600 mb-1">پۆل و هۆبە:</label>
+                        <input type="text" id="classSection" required placeholder="" class="w-full border rounded-lg px-3 py-2 text-sm outline-none font-semibold">
+                    </div>
+                    <div>
+                        <label id="ui-subject-label" class="block text-xs font-medium text-slate-600 mb-1">ناوی بابەتی وانە:</label>
+                        <input type="text" id="subjectName" required placeholder="" class="w-full border rounded-lg px-3 py-2 text-sm outline-none font-semibold">
+                    </div>
+                    <div>
+                        <label id="ui-week-label" class="block text-xs font-medium text-slate-600 mb-1">هەفتەی ژمارە:</label>
+                        <input type="text" id="weekNo" required placeholder="بۆ نموونە: ٥" class="w-full border rounded-lg px-3 py-2 text-sm outline-none font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <label id="ui-day-label" class="block text-xs font-medium text-slate-600 mb-1">ڕۆژی هەفتە:</label>
+                        <select id="dayName" class="w-full bg-white border rounded-lg px-3 py-2 text-sm outline-none">
+                        </select>
+                    </div>
+                    <div>
+                        <label id="ui-date-label" class="block text-xs font-medium text-slate-600 mb-1">ڕێکەوت (کالێندەر):</label>
+                        <input type="date" id="planDate" class="w-full bg-white border rounded-lg px-3 py-2 text-sm outline-none">
+                    </div>
+                </div>
+
+                <!-- Methods & Seating Checkboxes -->
+                <div class="space-y-4 border-t pt-4">
+                    <div>
+                        <label id="ui-methods-label" class="block text-xs font-bold text-sky-800 mb-2">میتۆدی وانەگوتنەوە (تیک بکە):</label>
+                        <div id="methodsCheckboxes" class="flex flex-wrap gap-2 text-xs"></div>
+                    </div>
+
+                    <div>
+                        <label id="ui-seating-label" class="block text-xs font-bold text-sky-800 mb-2">شێوازی دانیشتنی قوتابییان (تیک بکە):</label>
+                        <div id="seatingCheckboxes" class="flex flex-wrap gap-2 text-xs"></div>
+                    </div>
+                </div>
+
+                <!-- Fields with Minutes -->
+                <div class="space-y-4 border-t pt-4">
+                    <!-- Objective -->
+                    <div class="bg-sky-50/50 p-3 rounded-xl border border-sky-100 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label id="ui-obj-label" class="block text-xs font-bold text-sky-900">ئامانجی وانە:</label>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs text-slate-600" id="ui-mins-1">کات (خولەک):</span>
+                                <input type="text" id="objMins" placeholder="٥" class="w-16 bg-white border border-sky-200 rounded px-2 py-1 text-xs text-center outline-none font-bold">
+                            </div>
+                        </div>
+                        <textarea id="objText" rows="2" class="w-full bg-white border rounded-lg p-2 text-sm outline-none"></textarea>
+                    </div>
+
+                    <!-- Tools -->
+                    <div class="bg-sky-50/50 p-3 rounded-xl border border-sky-100 space-y-2">
+                        <label id="ui-tools-label" class="block text-xs font-bold text-sky-900">هۆیەکانی فێربوون (کەرەستە):</label>
+                        <div id="toolsCheckboxes" class="flex flex-wrap gap-2 text-xs mb-2"></div>
+                        <input type="text" id="toolsOther" placeholder="هۆی تری فێربوون..." class="w-full bg-white border rounded-lg px-3 py-1.5 text-sm outline-none">
+                    </div>
+
+                    <!-- Presentation -->
+                    <div class="bg-sky-50/50 p-3 rounded-xl border border-sky-100 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label id="ui-pres-label" class="block text-xs font-bold text-sky-900">خستنەڕووی بابەت:</label>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs text-slate-600" id="ui-mins-2">کات (خولەک):</span>
+                                <input type="text" id="presMins" placeholder="٢0" class="w-16 bg-white border border-sky-200 rounded px-2 py-1 text-xs text-center outline-none font-bold">
+                            </div>
+                        </div>
+                        <textarea id="presentationText" rows="3" class="w-full bg-white border rounded-lg p-2 text-sm outline-none"></textarea>
+                    </div>
+
+                    <!-- Evaluation -->
+                    <div class="bg-sky-50/50 p-3 rounded-xl border border-sky-100 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label id="ui-eval-label" class="block text-xs font-bold text-sky-900">هەڵسەنگاندن:</label>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs text-slate-600" id="ui-mins-3">کات (خولەک):</span>
+                                <input type="text" id="evalMins" placeholder="١0" class="w-16 bg-white border border-sky-200 rounded px-2 py-1 text-xs text-center outline-none font-bold">
+                            </div>
+                        </div>
+                        <div id="evalCheckboxes" class="flex flex-wrap gap-2 text-xs mb-2"></div>
+                        <input type="text" id="evalText" placeholder="وردەکاری هەڵسەنگاندن..." class="w-full bg-white border rounded-lg px-3 py-1.5 text-sm outline-none">
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="bg-sky-50/50 p-3 rounded-xl border border-sky-100 space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label id="ui-sum-label" class="block text-xs font-bold text-sky-900">پوختەی وانە:</label>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs text-slate-600" id="ui-mins-4">کات (خولەک):</span>
+                                <input type="text" id="sumMins" placeholder="٥" class="w-16 bg-white border border-sky-200 rounded px-2 py-1 text-xs text-center outline-none font-bold">
+                            </div>
+                        </div>
+                        <textarea id="summaryText" rows="2" class="w-full bg-white border rounded-lg p-2 text-sm outline-none"></textarea>
+                    </div>
+
+                    <!-- Feedback -->
+                    <div>
+                        <label id="ui-feedback-label" class="block text-xs font-bold text-sky-800 mb-1">تێبینی و فیدباک:</label>
+                        <input type="text" id="feedbackText" class="w-full border rounded-lg px-3 py-1.5 text-sm outline-none">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end">
+                    <button type="submit" id="ui-submit-btn" class="px-8 py-3 bg-sky-600 text-white font-bold rounded-xl hover:bg-sky-700 transition shadow-lg">بینینی کلێشەی فەرمی و چاپکردن →</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- STEP 3 & 4: Exact Template Preview -->
+        <div id="step-3" class="hidden p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3 no-print">
+                <h2 id="ui-preview-title" class="text-lg font-bold text-slate-800">پێشبینی دیزاینی فەرمی</h2>
+                <div class="flex gap-2">
+                    <button onclick="goToStep(2)" id="ui-edit-btn" class="bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg text-sm font-medium">دەستکاری</button>
+                    <button onclick="window.print()" id="ui-print-btn" class="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-md flex items-center gap-2">🖨 چاپکردن / PDF</button>
+                </div>
+            </div>
+
+            <!-- EXACT MATCH TEMPLATE DESIGN -->
+            <div id="printableArea" class="print-container template-box rounded-lg p-4 space-y-3 text-xs">
+                
+                <!-- Top Header Row -->
+                <div class="header-top rounded-md p-2.5 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <img id="previewLogo" src="" alt="Logo" class="w-12 h-12 object-contain hidden rounded border bg-white shadow-sm">
+                        <div>
+                            <h3 class="font-black text-base md:text-lg text-sky-950 tracking-wide" id="p-school">کۆمەڵگەی پەروەردەیی بارزانیی نمر</h3>
+                            <span id="p-form-label" class="text-[10px] text-sky-800 font-bold bg-white px-2 py-0.5 rounded border border-sky-300">پلانی ڕۆژانە</span>
+                        </div>
+                    </div>
+                    <div class="bg-white px-4 py-1.5 rounded border border-sky-300 shadow-sm text-slate-900">
+                        <span id="p-teacher-lbl" class="font-bold">مامۆستای وانە:</span> <span id="p-teacher" class="font-black text-sm md:text-base text-sky-900"></span>
+                    </div>
+                </div>
+
+                <!-- Info Bar Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 bg-sky-50 p-2.5 rounded border border-sky-300 text-sky-950 font-semibold">
+                    <div><span id="p-class-lbl">پۆل و هۆبە:</span> <span id="p-class" class="font-bold text-slate-900 text-sm"></span></div>
+                    <div><span id="p-subject-lbl">ناوی بابەت:</span> <span id="p-subject" class="font-black text-sm md:text-base text-sky-900"></span></div>
+                    <div><span id="p-date-lbl">ڕێکەوت و ڕۆژ:</span> <span id="p-date" class="font-bold text-slate-900"></span> (<span id="p-day" class="font-bold"></span>)</div>
+                    <div><span id="p-week-lbl">هەفتە:</span> <span id="p-week" class="font-bold text-slate-900"></span></div>
+                </div>
+
+                <!-- Methods & Seating Boxes -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div class="section-box !mb-0">
+                        <span id="p-methods-badge" class="badge-title text-[11px]">میتۆدی وانەگوتنەوە</span>
+                        <div id="p-methods" class="text-slate-900 font-semibold text-[11px] mt-1"></div>
+                    </div>
+                    <div class="section-box !mb-0">
+                        <span id="p-seating-badge" class="badge-title text-[11px] !bg-pink-100 !text-pink-900">شێوازی دانیشتنی قوتابییان</span>
+                        <div id="p-seating" class="text-slate-900 font-semibold text-[11px] mt-1"></div>
+                    </div>
+                </div>
+
+                <!-- Objective -->
+                <div class="section-box">
+                    <div class="flex justify-between items-center">
+                        <span id="p-obj-badge" class="badge-title">ئامانجی وانە</span>
+                        <span class="text-sky-800 font-bold bg-sky-100 px-2 py-0.5 rounded text-[11px]"><span id="p-obj-mins"></span> <span class="mins-text">خولەک</span></span>
+                    </div>
+                    <p id="p-obj" class="text-slate-900 font-medium whitespace-pre-wrap min-h-[25px] mt-1"></p>
+                </div>
+
+                <!-- Tools -->
+                <div class="section-box">
+                    <span id="p-tools-badge" class="badge-title">هۆیەکانی فێربوون</span>
+                    <p id="p-tools" class="text-slate-900 font-medium mt-1"></p>
+                </div>
+
+                <!-- Presentation -->
+                <div class="section-box">
+                    <div class="flex justify-between items-center">
+                        <span id="p-pres-badge" class="badge-title">خستنەڕووی بابەت</span>
+                        <span class="text-sky-800 font-bold bg-sky-100 px-2 py-0.5 rounded text-[11px]"><span id="p-pres-mins"></span> <span class="mins-text">خولەک</span></span>
+                    </div>
+                    <p id="p-presentation" class="text-slate-900 font-medium whitespace-pre-wrap min-h-[40px] mt-1"></p>
+                </div>
+
+                <!-- Evaluation -->
+                <div class="section-box">
+                    <div class="flex justify-between items-center">
+                        <span id="p-eval-badge" class="badge-title">هەڵسەنگاندن</span>
+                        <span class="text-sky-800 font-bold bg-sky-100 px-2 py-0.5 rounded text-[11px]"><span id="p-eval-mins"></span> <span class="mins-text">خولەک</span></span>
+                    </div>
+                    <p id="p-eval" class="text-slate-900 font-medium mt-1"></p>
+                </div>
+
+                <!-- Summary -->
+                <div class="section-box">
+                    <div class="flex justify-between items-center">
+                        <span id="p-sum-badge" class="badge-title">پوختەی وانە</span>
+                        <span class="text-sky-800 font-bold bg-sky-100 px-2 py-0.5 rounded text-[11px]"><span id="p-sum-mins"></span> <span class="mins-text">خولەک</span></span>
+                    </div>
+                    <p id="p-summary" class="text-slate-900 font-medium mt-1"></p>
+                </div>
+
+                <!-- Feedback -->
+                <div class="section-box !bg-amber-50/50 !border-amber-300">
+                    <span id="p-feedback-badge" class="badge-title !bg-amber-200 !text-amber-950">تێبینی و فیدباک</span>
+                    <p id="p-feedback" class="text-slate-900 font-medium mt-1"></p>
+                </div>
+
+                <!-- Footer Sign -->
+                <div class="flex justify-between items-center pt-2 text-[11px] text-slate-600 border-t">
+                    <div><span id="p-sign-lbl">ئامادەکردنی:</span> <span id="p-sign" class="font-bold text-slate-900"></span></div>
+                    <span id="p-school-footer" class="font-bold text-sky-900">کۆمەڵگەی پەروەردەیی بارزانیی نمر</span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentLang = 'ku';
+        let logoDataUrl = '';
+
+        const TELEGRAM_BOT_TOKEN = 'YOUR_BOT_API_KEY'; 
+        const TELEGRAM_CHAT_ID = 'YOUR_CHAT_ID';
+
+        const translations = {
+            ku: {
+                dir: 'rtl',
+                schoolName: 'کۆمەڵگەی پەروەردەیی بارزانیی نمر',
+                formTitle: 'پڕکردنەوەی فۆرمی پلانی ڕۆژانە',
+                backBtn: '← گەڕانەوە',
+                logoLabel: 'دانانی لۆگۆ (بە ئارەزووی خۆت):',
+                schoolLabel: 'ناوی قوتابخانە:',
+                teacherLabel: 'ناوی مامۆستا:',
+                classLabel: 'پۆل و هۆبە:',
+                subjectLabel: 'ناوی بابەتی وانە:',
+                weekLabel: 'هەفتەی ژمارە:',
+                dayLabel: 'ڕۆژی هەفتە:',
+                dateLabel: 'ڕێکەوت (کالێندەر):',
+                methodsLabel: 'میتۆدی وانەگوتنەوە (تیک بکە):',
+                seatingLabel: 'شێوازی دانیشتنی قوتابییان (تیک بکە):',
+                objLabel: 'ئامانجی وانە:',
+                toolsLabel: 'هۆیەکانی فێربوون (کەرەستە):',
+                presLabel: 'خستنەڕووی بابەت:',
+                evalLabel: 'هەڵسەنگاندن:',
+                sumLabel: 'پوختەی وانە:',
+                feedbackLabel: 'تێبینی و فیدباک:',
+                minsLabel: 'کات (خولەک):',
+                minsUnit: 'خولەک',
+                submitBtn: 'بینینی کلێشەی فەرمی و چاپکردن →',
+                previewTitle: 'پێشبینی دیزاینی فەرمی',
+                editBtn: 'دەستکاری',
+                printBtn: '🖨 چاپکردن / PDF',
+                formLabelBadge: 'پلانی ڕۆژانە',
+                teacherLbl: 'مامۆستای وانە:',
+                classLbl: 'پۆل و هۆبە:',
+                subjectLbl: 'ناوی بابەت:',
+                dateLbl: 'ڕێکەوت و ڕۆژ:',
+                weekLbl: 'هەفتە:',
+                methodsBadge: 'میتۆدی وانەگوتنەوە',
+                seatingBadge: 'شێوازی دانیشتنی قوتابییان',
+                objBadge: 'ئامانجی وانە',
+                toolsBadge: 'هۆیەکانی فێربوون',
+                presBadge: 'خستنەڕووی بابەت',
+                evalBadge: 'هەڵسەنگاندن',
+                sumBadge: 'پوختەی وانە',
+                feedbackBadge: 'تێبینی و فیدباک',
+                signLbl: 'ئامادەکردنی:',
+                days: ['شەممە', 'یەکشەممە', 'دووشەممە', 'سێشەممە', 'چوارشەممە', 'پێنجشەممە'],
+                methods: ['گرووپات', 'سۆکراتی', 'پرسیار و وەڵام', 'هاوپۆلەکان', 'شەش گوشەیی', 'پەزڵ', 'نەخشەی زاراوی', 'چەمکەکان', 'سنگاپووری-چینی', 'نەخشەی بیرکردنەوە'],
+                seating: ['کلاسیکی', 'پیتی U', 'بازنەیی', 'گرووپات', 'تاکی'],
+                tools: ['کتێب', 'بۆرد', 'داتاشۆ', 'ڤیدیۆ', 'نەخشە', 'یاری', 'تاقیکە', 'پێنوسی ڕەنگاوڕەنگ'],
+                eval: ['پرسیار و وەڵام', 'گفتوگۆ', 'کویز', 'وۆرک شیت', 'ڕاهێنان', 'ئەرکی ماڵەوە']
+            },
+            en: {
+                dir: 'ltr',
+                schoolName: 'Barzani Namir Educational Complex',
+                formTitle: 'Daily Lesson Plan Form',
+                backBtn: '← Back',
+                logoLabel: 'Upload Logo (Optional):',
+                schoolLabel: 'School Name:',
+                teacherLabel: 'Teacher Name:',
+                classLabel: 'Class & Section:',
+                subjectLabel: 'Subject Name:',
+                weekLabel: 'Week No:',
+                dayLabel: 'Day of Week:',
+                dateLabel: 'Date (Calendar):',
+                methodsLabel: 'Teaching Methods (Select):',
+                seatingLabel: 'Student Seating Arrangement:',
+                objLabel: 'Lesson Objectives:',
+                toolsLabel: 'Learning Resources / Tools:',
+                presLabel: 'Lesson Presentation:',
+                evalLabel: 'Evaluation:',
+                sumLabel: 'Lesson Summary:',
+                feedbackLabel: 'Notes & Feedback:',
+                minsLabel: 'Time (Mins):',
+                minsUnit: 'mins',
+                submitBtn: 'Preview Official Template & Print →',
+                previewTitle: 'Official Template Preview',
+                editBtn: 'Edit',
+                printBtn: '🖨 Print / PDF',
+                formLabelBadge: 'Daily Plan',
+                teacherLbl: 'Teacher:',
+                classLbl: 'Class:',
+                subjectLbl: 'Subject:',
+                dateLbl: 'Date & Day:',
+                weekLbl: 'Week:',
+                methodsBadge: 'Teaching Methods',
+                seatingBadge: 'Seating Arrangement',
+                objBadge: 'Lesson Objectives',
+                toolsBadge: 'Learning Resources',
+                presBadge: 'Lesson Presentation',
+                evalBadge: 'Evaluation',
+                sumBadge: 'Lesson Summary',
+                feedbackBadge: 'Notes & Feedback',
+                signLbl: 'Prepared by:',
+                days: ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'],
+                methods: ['Groups', 'Socratic', 'Q & A', 'Peers', 'Hexagonal', 'Jigsaw', 'Term Map', 'Concepts', 'Singapore-China', 'Mind Map'],
+                seating: ['Classic', 'U-Shape', 'Circular', 'Groups', 'Individual'],
+                tools: ['Book', 'Board', 'Projector', 'Video', 'Map', 'Game', 'Lab', 'Colored Pens'],
+                eval: ['Q & A', 'Discussion', 'Quiz', 'Worksheet', 'Exercise', 'Homework']
+            },
+            ar: {
+                dir: 'rtl',
+                schoolName: 'مجمع بارزاني نمر التربوي',
+                formTitle: 'نموذج خطة الدرس اليومية',
+                backBtn: '← رجوع',
+                logoLabel: 'إضافة شعار (اختياري):',
+                schoolLabel: 'اسم المدرسة:',
+                teacherLabel: 'اسم المعلم:',
+                classLabel: 'الصف والشعبة:',
+                subjectLabel: 'اسم المادة:',
+                weekLabel: 'رقم الأسبوع:',
+                dayLabel: 'اليوم:',
+                dateLabel: 'التاريخ (التقويم):',
+                methodsLabel: 'طرق التدريس (اختر):',
+                seatingLabel: 'طريقة جلوس الطلاب (اختر):',
+                objLabel: 'أهداف الدرس:',
+                toolsLabel: 'مصادر التعلم (الوسائل):',
+                presLabel: 'عرض الدرس:',
+                evalLabel: 'التقييم:',
+                sumLabel: 'ملخص الدرس:',
+                feedbackLabel: 'الملاحظات والتعليقات:',
+                minsLabel: 'الوقت (دقائق):',
+                minsUnit: 'دقيقة',
+                submitBtn: 'معاينة القالب الرسمي والطباعة →',
+                previewTitle: 'معاينة القالب الرسمي',
+                editBtn: 'تعديل',
+                printBtn: '🖨 طباعة / PDF',
+                formLabelBadge: 'الخطة اليومية',
+                teacherLbl: 'المعلم:',
+                classLbl: 'الصف:',
+                subjectLbl: 'المادة:',
+                dateLbl: 'التاريخ واليوم:',
+                weekLbl: 'الأسبوع:',
+                methodsBadge: 'طرق التدريس',
+                seatingBadge: 'طريقة الجلوس',
+                objBadge: 'أهداف الدرس',
+                toolsBadge: 'مصادر التعلم',
+                presBadge: 'عرض الدرس',
+                evalBadge: 'التقييم',
+                sumBadge: 'ملخص الدرس',
+                feedbackBadge: 'الملاحظات والتعليقات',
+                signLbl: 'إعداد:',
+                days: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
+                methods: ['مجموعات', 'سقراطية', 'سؤال وجواب', 'القرناء', 'سداسي', 'بازل', 'خريطة المفاهيم', 'المفاهيم', 'سنغافوري-صيني', 'خريطة الذهن'],
+                seating: ['كلاسيكي', 'على شكل U', 'دائري', 'مجموعات', 'فردي'],
+                tools: ['كتاب', 'سبورة', 'داتاششو', 'فيديو', 'خريطة', 'لعبة', 'مختبر', 'أقلام ملونة'],
+                eval: ['سؤال وجواب', 'مناقشة', 'كويز', 'ورقة عمل', 'تمارين', 'واجب منزلي']
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            document.getElementById('htmlRoot').setAttribute('dir', t.dir);
+            document.getElementById('htmlRoot').setAttribute('lang', lang);
+
+            document.getElementById('ui-form-title').innerText = t.formTitle;
+            document.getElementById('ui-back-btn').innerText = t.backBtn;
+            document.getElementById('ui-logo-label').innerText = t.logoLabel;
+            document.getElementById('ui-school-label').innerText = t.schoolLabel;
+            document.getElementById('schoolName').value = t.schoolName;
+            document.getElementById('ui-teacher-label').innerText = t.teacherLabel;
+            document.getElementById('ui-class-label').innerText = t.classLabel;
+            document.getElementById('ui-subject-label').innerText = t.subjectLabel;
+            document.getElementById('ui-week-label').innerText = t.weekLabel;
+            document.getElementById('ui-day-label').innerText = t.dayLabel;
+            document.getElementById('ui-date-label').innerText = t.dateLabel;
+            document.getElementById('ui-methods-label').innerText = t.methodsLabel;
+            document.getElementById('ui-seating-label').innerText = t.seatingLabel;
+            document.getElementById('ui-obj-label').innerText = t.objLabel;
+            document.getElementById('ui-tools-label').innerText = t.toolsLabel;
+            document.getElementById('ui-pres-label').innerText = t.presLabel;
+            document.getElementById('ui-eval-label').innerText = t.evalLabel;
+            document.getElementById('ui-sum-label').innerText = t.sumLabel;
+            document.getElementById('ui-feedback-label').innerText = t.feedbackLabel;
+            document.getElementById('ui-submit-btn').innerText = t.submitBtn;
+
+            document.getElementById('ui-mins-1').innerText = t.minsLabel;
+            document.getElementById('ui-mins-2').innerText = t.minsLabel;
+            document.getElementById('ui-mins-3').innerText = t.minsLabel;
+            document.getElementById('ui-mins-4').innerText = t.minsLabel;
+            
+            document.querySelectorAll('.mins-text').forEach(el => el.innerText = t.minsUnit);
+            
+            document.getElementById('ui-preview-title').innerText = t.previewTitle;
+            document.getElementById('ui-edit-btn').innerText = t.editBtn;
+            document.getElementById('ui-print-btn').innerText = t.printBtn;
+
+            const daySelect = document.getElementById('dayName');
+            daySelect.innerHTML = '';
+            t.days.forEach(day => {
+                const opt = document.createElement('option');
+                opt.value = day;
+                opt.innerText = day;
+                daySelect.appendChild(opt);
+            });
+
+            const methodsContainer = document.getElementById('methodsCheckboxes');
+            methodsContainer.innerHTML = '';
+            t.methods.forEach(m => {
+                methodsContainer.innerHTML += `<label class="flex items-center gap-1 bg-sky-50 px-2.5 py-1.5 rounded border border-sky-200 cursor-pointer"><input type="checkbox" name="method" value="${m}"> ${m}</label>`;
+            });
+
+            const seatingContainer = document.getElementById('seatingCheckboxes');
+            seatingContainer.innerHTML = '';
+            t.seating.forEach(s => {
+                seatingContainer.innerHTML += `<label class="flex items-center gap-1 bg-pink-50 px-2.5 py-1.5 rounded border border-pink-200 cursor-pointer"><input type="checkbox" name="seating" value="${s}"> ${s}</label>`;
+            });
+
+            const toolsContainer = document.getElementById('toolsCheckboxes');
+            toolsContainer.innerHTML = '';
+            t.tools.forEach(tool => {
+                toolsContainer.innerHTML += `<label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="tool" value="${tool}"> ${tool}</label>`;
+            });
+
+            const evalContainer = document.getElementById('evalCheckboxes');
+            evalContainer.innerHTML = '';
+            t.eval.forEach(ev => {
+                evalContainer.innerHTML += `<label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" name="eval" value="${ev}"> ${ev}</label>`;
+            });
+
+            goToStep(2);
+        }
+
+        function goToStep(step) {
+            document.getElementById('step-1').classList.add('hidden');
+            document.getElementById('step-2').classList.add('hidden');
+            document.getElementById('step-3').classList.add('hidden');
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        document.getElementById('logoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoDataUrl = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function sendNotificationToTelegram(teacher, week) {
+            if(TELEGRAM_BOT_TOKEN === 'YOUR_BOT_API_KEY') return;
+            const schoolNameVal = document.getElementById('schoolName').value;
+            const message = `📋 ئاگاداری بۆ بەڕێوەبەر (مامۆستا دلشاد جعفر محمود):\n\nمامۆستا (${teacher}) لیسن پلانی دروست کرد بۆ هەفتەی (${week}).\n\n🏛 ${schoolNameVal}`;
+            
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message })
+            }).catch(err => console.log('Telegram Error:', err));
+        }
+
+        function previewPlan(e) {
+            e.preventDefault();
+            const t = translations[currentLang];
+            
+            const teacher = document.getElementById('teacherName').value;
+            const week = document.getElementById('weekNo').value;
+            const sub = document.getElementById('subjectName').value;
+            const cls = document.getElementById('classSection').value;
+            const day = document.getElementById('dayName').value;
+            const date = document.getElementById('planDate').value;
+            const schoolNameVal = document.getElementById('schoolName').value;
+
+            document.getElementById('p-school').innerText = schoolNameVal;
+            document.getElementById('p-teacher').innerText = teacher;
+            document.getElementById('p-sign').innerText = teacher;
+            document.getElementById('p-class').innerText = cls;
+            document.getElementById('p-subject').innerText = sub;
+            document.getElementById('p-week').innerText = week;
+            document.getElementById('p-day').innerText = day;
+            document.getElementById('p-date').innerText = date;
+            
+            document.getElementById('p-obj').innerText = document.getElementById('objText').value;
+            document.getElementById('p-obj-mins').innerText = document.getElementById('objMins').value || '0';
+            
+            document.getElementById('p-presentation').innerText = document.getElementById('presentationText').value;
+            document.getElementById('p-pres-mins').innerText = document.getElementById('presMins').value || '0';
+
+            document.getElementById('p-eval-mins').innerText = document.getElementById('evalMins').value || '0';
+
+            document.getElementById('p-summary').innerText = document.getElementById('summaryText').value;
+            document.getElementById('p-sum-mins').innerText = document.getElementById('sumMins').value || '0';
+
+            document.getElementById('p-feedback').innerText = document.getElementById('feedbackText').value;
+
+            document.getElementById('p-form-label').innerText = t.formLabelBadge;
+            document.getElementById('p-teacher-lbl').innerText = t.teacherLbl;
+            document.getElementById('p-class-lbl').innerText = t.classLbl;
+            document.getElementById('p-subject-lbl').innerText = t.subjectLbl;
+            document.getElementById('p-date-lbl').innerText = t.dateLbl;
+            document.getElementById('p-week-lbl').innerText = t.weekLbl;
+            document.getElementById('p-methods-badge').innerText = t.methodsBadge;
+            document.getElementById('p-seating-badge').innerText = t.seatingBadge;
+            document.getElementById('p-obj-badge').innerText = t.objBadge;
+            document.getElementById('p-tools-badge').innerText = t.toolsBadge;
+            document.getElementById('p-pres-badge').innerText = t.presBadge;
+            document.getElementById('p-eval-badge').innerText = t.evalBadge;
+            document.getElementById('p-sum-badge').innerText = t.sumBadge;
+            document.getElementById('p-feedback-badge').innerText = t.feedbackBadge;
+            document.getElementById('p-sign-lbl').innerText = t.signLbl;
+            document.getElementById('p-school-footer').innerText = schoolNameVal;
+
+            const methods = Array.from(document.querySelectorAll('input[name="method"]:checked')).map(el => `✓ ${el.value}`).join(' | ');
+            document.getElementById('p-methods').innerText = methods || '-';
+
+            const seating = Array.from(document.querySelectorAll('input[name="seating"]:checked')).map(el => `✓ ${el.value}`).join(' | ');
+            document.getElementById('p-seating').innerText = seating || '-';
+
+            const tools = Array.from(document.querySelectorAll('input[name="tool"]:checked')).map(el => el.value);
+            const otherTools = document.getElementById('toolsOther').value;
+            let allTools = tools.join(', ');
+            if(otherTools) allTools += (allTools ? ', ' : '') + otherTools;
+            document.getElementById('p-tools').innerText = allTools || '-';
+
+            const evals = Array.from(document.querySelectorAll('input[name="eval"]:checked')).map(el => el.value);
+            const evalText = document.getElementById('evalText').value;
+            let allEval = evals.join(', ');
+            if(evalText) allEval += (allEval ? ' - ' : '') + evalText;
+            document.getElementById('p-eval').innerText = allEval || '-';
+
+            const previewLogo = document.getElementById('previewLogo');
+            if(logoDataUrl) {
+                previewLogo.src = logoDataUrl;
+                previewLogo.classList.remove('hidden');
+            } else {
+                previewLogo.classList.add('hidden');
+            }
+
+            sendNotificationToTelegram(teacher, week);
+
+            goToStep(3);
+        }
+    </script>
+</body>
+</html>
